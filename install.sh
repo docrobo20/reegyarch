@@ -26,9 +26,36 @@ mkdir -p ~/.config
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay
 
-# --- 7. Shell Setup & .zshrc ---
-sudo chsh -s $(which zsh) $USER
-ln -sf ~/reegylinux/.zshrc ~/.zshrc
+# --- 7. Hardened Zsh Configuration ---
+echo "Forcing Zsh as the system shell..."
+
+# 1. Ensure Zsh is installed (Safety check for vanilla Arch installs)
+if ! command -v zsh &> /dev/null; then
+    sudo pacman -S --noconfirm zsh
+fi
+
+# 2. Add to whitelist - Essential for Ly/KDE to allow the login
+ZSH_BIN=$(which zsh)
+if ! grep -q "$ZSH_BIN" /etc/shells; then
+    echo "Registering $ZSH_BIN in /etc/shells..."
+    echo "$ZSH_BIN" | sudo tee -a /etc/shells
+fi
+
+# 3. Deploy .zshrc BEFORE switching
+# This prevents the 'New User' config function from triggering on first launch
+rm -f "$HOME/.zshrc"
+if [ -f "$HOME/reegylinux/.zshrc" ]; then
+    ln -sf "$HOME/reegylinux/.zshrc" "$HOME/.zshrc"
+    echo "Symlinked .zshrc from reegylinux."
+else
+    echo "Error: .zshrc missing from repo. Creating placeholder to prevent config prompt."
+    touch "$HOME/.zshrc"
+fi
+
+# 4. Final Shell Switch
+# We use the absolute path to ensure the login manager doesn't get confused
+sudo chsh -s "$ZSH_BIN" $USER
+echo "System shell set to $ZSH_BIN."
 
 # --- 8. Desktop & Greeter ---
 sudo pacman -S --noconfirm plasma-desktop dolphin konsole ly
