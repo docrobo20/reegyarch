@@ -26,36 +26,40 @@ mkdir -p ~/.config
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay
 
-# --- 7. Hardened Zsh Configuration ---
-echo "Forcing Zsh as the system shell..."
+# --- 7. Hardened Zsh & Plugin Configuration ---
+echo "Configuring Zsh and AUR plugins..."
 
-# 1. Ensure Zsh is installed (Safety check for vanilla Arch installs)
-if ! command -v zsh &> /dev/null; then
-    sudo pacman -S --noconfirm zsh
-fi
+# 1. Install Zsh and Plugins via Yay
+# This ensures the binaries are on the system before we switch shells
+echo "Installing Zsh plugins from AUR..."
+yay -S --noconfirm zsh-autosuggestions zsh-syntax-highlighting
 
-# 2. Add to whitelist - Essential for Ly/KDE to allow the login
+# 2. Ensure Zsh is in /etc/shells (Prevents Login Lockouts)
 ZSH_BIN=$(which zsh)
 if ! grep -q "$ZSH_BIN" /etc/shells; then
     echo "Registering $ZSH_BIN in /etc/shells..."
     echo "$ZSH_BIN" | sudo tee -a /etc/shells
 fi
 
-# 3. Deploy .zshrc BEFORE switching
-# This prevents the 'New User' config function from triggering on first launch
+# 3. Deploy .zshrc and Inject Plugin Sources
+# We do this to ensure the plugins load even if they aren't in your git version yet
 rm -f "$HOME/.zshrc"
 if [ -f "$HOME/reegylinux/.zshrc" ]; then
     ln -sf "$HOME/reegylinux/.zshrc" "$HOME/.zshrc"
-    echo "Symlinked .zshrc from reegylinux."
 else
-    echo "Error: .zshrc missing from repo. Creating placeholder to prevent config prompt."
     touch "$HOME/.zshrc"
 fi
 
+# Inject source lines if they aren't already there (Safety for AUR-pathing)
+if ! grep -q "zsh-autosuggestions.zsh" "$HOME/.zshrc"; then
+    echo -e "\n# AUR Plugin Sources" >> "$HOME/.zshrc"
+    echo "source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> "$HOME/.zshrc"
+    echo "source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> "$HOME/.zshrc"
+fi
+
 # 4. Final Shell Switch
-# We use the absolute path to ensure the login manager doesn't get confused
 sudo chsh -s "$ZSH_BIN" $USER
-echo "System shell set to $ZSH_BIN."
+echo "System shell set to $ZSH_BIN with AUR plugins enabled."
 
 # --- 8. Desktop & Greeter ---
 sudo pacman -S --noconfirm plasma-desktop dolphin konsole ly
