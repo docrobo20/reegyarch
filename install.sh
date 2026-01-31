@@ -49,19 +49,25 @@ echo "Installing Yay and AUR manifest..."
 git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay
 yay -S --noconfirm "${MY_AUR_PACKAGES[@]}"
 
-# --- 7. Hardened Zsh & Oh My Zsh Configuration ---
-echo "Installing Oh My Zsh and finalizing shell..."
+# --- 7. Zsh & Oh My Zsh Integration ---
+echo "Configuring Zsh..."
 
-# 1. Install Oh My Zsh (Unattended mode prevents it from opening a new shell mid-script)
+# 1. Install OMZ (Unattended)
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-# 2. Ensure Zsh is whitelisted in /etc/shells for login managers
+# 2. The Symlink Bridge (Fixes the 'Not Found' error for Pacman plugins)
+ZSH_CUSTOM="$HOME/.oh-my-zsh/custom/plugins"
+mkdir -p "$ZSH_CUSTOM"
+ln -sfn /usr/share/zsh/plugins/zsh-autosuggestions "$ZSH_CUSTOM/zsh-autosuggestions"
+ln -sfn /usr/share/zsh/plugins/zsh-syntax-highlighting "$ZSH_CUSTOM/zsh-syntax-highlighting"
+
+# 3. Whitelist Shell
 ZSH_BIN=$(which zsh)
 grep -q "$ZSH_BIN" /etc/shells || echo "$ZSH_BIN" | sudo tee -a /etc/shells
 
-# 3. Deploy .zshrc and force symlink
+# 4. Deploy .zshrc
 rm -f "$HOME/.zshrc"
 if [ -f "$HOME/reegylinux/.zshrc" ]; then
     ln -sf "$HOME/reegylinux/.zshrc" "$HOME/.zshrc"
@@ -69,13 +75,7 @@ else
     touch "$HOME/.zshrc"
 fi
 
-# 4. Inject AUR plugin sources
-# This ensures autosuggestions and syntax highlighting work on first boot
-if ! grep -q "zsh-autosuggestions.zsh" "$HOME/.zshrc"; then
-    echo -e "\n# AUR Plugin Sources\nsource /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh\nsource /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> "$HOME/.zshrc"
-fi
-
-# 5. Set system shell
+# 5. Switch Shell
 sudo chsh -s "$ZSH_BIN" $USER
 
 # --- 8. Desktop & Greeter ---
