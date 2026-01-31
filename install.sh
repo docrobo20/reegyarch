@@ -44,6 +44,21 @@ mkdir -p ~/.config
 [ -d "$HOME/reegylinux/mpv" ] && ln -sfn ~/reegylinux/mpv ~/.config/mpv
 [ -d "$HOME/reegylinux/fastfetch" ] && ln -sfn ~/reegylinux/fastfetch ~/.config/fastfetch
 
+# --- 5b. Wallpaper Repository Integration ---
+echo "Importing personal wallpaper collection..."
+
+# 1. Create the standard Pictures directory if it doesn't exist
+mkdir -p ~/Pictures
+
+# 2. Symlink your repo's wallpaper folder to your home directory
+# This assumes your folder in the repo is named 'wallpapers'
+if [ -d "$HOME/reegylinux/wallpapers" ]; then
+    ln -sfn "$HOME/reegylinux/wallpapers" "$HOME/Pictures/Wallpapers"
+    echo "Personal wallpapers linked to ~/Pictures/Wallpapers"
+else
+    echo "Warning: 'wallpapers' folder not found in reegylinux repo. Skipping symlink."
+fi
+
 # --- 6. AUR Helper & Zsh Plugins ---
 echo "Installing Yay and AUR manifest..."
 git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay
