@@ -11,14 +11,12 @@ fi
 
 # Official Repo Packages
 MY_PACKAGES=(
-     "7zip" "proton-vpn-gtk-app" "discord" "spotify-launcher" "fastfetch" "fcitx5" "fcitx5-configtool" "fcitx5-mozc" "fzf" "nautilus" "noto-fonts" "noto-fonts-cjk" "qt6ct" "vlc" "mpv" "qbittorrent" 
+     "7zip" "proton-vpn-gtk-app" "discord" "spotify-launcher" "fastfetch" "fcitx5" "fcitx5-configtool" "fcitx5-mozc" "fzf" "nautilus" "noto-fonts" "noto-fonts-cjk" "qt6ct" "vlc" "mpv" "qbittorrent" "zsh-autosuggestions" "zsh-syntax-highlighting" "mpv" 
 )
 
 # AUR Packages
 MY_AUR_PACKAGES=(
     "anki-bin"
-    "zsh-autosuggestions"
-    "zsh-syntax-highlighting"
 )
 
 # --- 2. Bootstrap & System Optimization ---
