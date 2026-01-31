@@ -104,4 +104,10 @@ if hostnamectl status | grep -q "virtualization"; then
 fi
 
 sudo pacman -Sc --noconfirm
-echo "Deployment Complete! Scripts are decoupled and modular."
+echo "Deployment Complete!"
+
+# --- 12. Security Hardening ---
+if [ -f "$HOME/reegylinux/security.sh" ]; then
+    chmod +x ~/reegylinux/security.sh
+    ~/reegylinux/security.sh
+fi
