@@ -49,14 +49,19 @@ echo "Installing Yay and AUR manifest..."
 git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm && cd .. && rm -rf yay
 yay -S --noconfirm "${MY_AUR_PACKAGES[@]}"
 
-# --- 7. Hardened Zsh Configuration ---
-echo "Finalizing Zsh setup..."
-ZSH_BIN=$(which zsh)
+# --- 7. Hardened Zsh & Oh My Zsh Configuration ---
+echo "Installing Oh My Zsh and finalizing shell..."
 
-# Ensure Zsh is whitelisted in /etc/shells for login managers
+# 1. Install Oh My Zsh (Unattended mode prevents it from opening a new shell mid-script)
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+fi
+
+# 2. Ensure Zsh is whitelisted in /etc/shells for login managers
+ZSH_BIN=$(which zsh)
 grep -q "$ZSH_BIN" /etc/shells || echo "$ZSH_BIN" | sudo tee -a /etc/shells
 
-# Deploy .zshrc and force symlink
+# 3. Deploy .zshrc and force symlink
 rm -f "$HOME/.zshrc"
 if [ -f "$HOME/reegylinux/.zshrc" ]; then
     ln -sf "$HOME/reegylinux/.zshrc" "$HOME/.zshrc"
@@ -64,12 +69,13 @@ else
     touch "$HOME/.zshrc"
 fi
 
-# Inject AUR plugin sources to .zshrc if missing
+# 4. Inject AUR plugin sources
+# This ensures autosuggestions and syntax highlighting work on first boot
 if ! grep -q "zsh-autosuggestions.zsh" "$HOME/.zshrc"; then
     echo -e "\n# AUR Plugin Sources\nsource /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh\nsource /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> "$HOME/.zshrc"
 fi
 
-# Set system shell
+# 5. Set system shell
 sudo chsh -s "$ZSH_BIN" $USER
 
 # --- 8. Desktop & Greeter ---
