@@ -55,22 +55,41 @@ echo "exec-once = dms run" >> "$HYPR_CONF"
 # --- 10. Custom Hyprland Keybinds & Workspace Rules ---
 echo "Injecting custom keybinds and workspace rules..."
 
-# Custom Binds for DMS
-DMS_BINDS="$HOME/.config/hypr/configs/binds.conf"
-cat <<EOF >> "$DMS_BINDS"
+# Define exact DMS paths
+HYPR_DIR="$HOME/.config/hypr"
+DMS_DIR="$HYPR_DIR/dms"
+DMS_BINDS="$DMS_DIR/binds.conf"
+HYPR_CONF="$HYPR_DIR/hyprland.conf"
+
+# Ensure the DMS directory exists (safety check)
+mkdir -p "$DMS_DIR"
+
+# 10a. Inject Custom Binds to DMS folder
+# We use >> to append so we don't wipe out the DMS system binds
+if [ -f "$DMS_BINDS" ] || [ -d "$DMS_DIR" ]; then
+    cat <<EOF >> "$DMS_BINDS"
 
 # --- REEGY CUSTOM BINDS ---
 bind = SUPER, T, exec, sh -c "alacritty -e btop"
 bind = Super, E, exec, nautilus
 bind = Super, F, exec, firefox
 bind = Super, Return, exec, alacritty
+bind = SUPER SHIFT, E, exit
+bind = SUPER SHIFT, P, dpms, toggle
 bind = Alt, Return, fullscreen, 1 
 bind = SUPER, Q, killactive
+bind = SUPER, R, layoutmsg, togglesplit
+bind = SUPER SHIFT, F, fullscreen, 0
 bind = Super, W, togglefloating
 EOF
+    echo "Custom binds injected into $DMS_BINDS"
+else
+    echo "Error: Could not find $DMS_DIR. Skipping bind injection."
+fi
 
-# Custom Workspaces for Hyprland.conf
-cat <<EOF >> "$HYPR_CONF"
+# 10b. Inject Workspace Rules to main hyprland.conf
+if [ -f "$HYPR_CONF" ]; then
+    cat <<EOF >> "$HYPR_CONF"
 
 # --- REEGY WORKSPACE RULES ---
 workspace=1,monitor:HDMI-A-1
@@ -79,6 +98,8 @@ workspace=3,monitor:DP-1
 workspace=4,monitor:DP-1
 workspace=5,monitor:DP-1
 EOF
+    echo "Workspace rules injected into $HYPR_CONF"
+fi
 
 # --- 11. VM Tweaks & Cleanup ---
 if hostnamectl status | grep -q "virtualization"; then
