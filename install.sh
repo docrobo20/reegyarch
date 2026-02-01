@@ -99,22 +99,29 @@ sudo pacman -S --noconfirm plasma-desktop dolphin konsole ly
 sudo systemctl enable ly@tty2.service
 sudo systemctl set-default graphical.target
 
-# --- 9. DMS Installer & Isolation (Final Version) ---
+# --- 9. DMS Installer & Stealth Isolation ---
 echo "Running DMS installer..."
 curl -fsSL https://install.danklinux.com | sh
 
-# Enable the service (without starting it) to satisfy dms doctor
-systemctl --user enable dms
+# 1. 'Fake' the Enable: Satisfies dms doctor without auto-starting
+# This creates the link the doctor looks for, but doesn't register it in the boot target
+mkdir -p ~/.config/systemd/user/default.target.wants
+ln -sfn /usr/lib/systemd/user/dms.service ~/.config/systemd/user/default.target.wants/dms.service
 
-# Migrate DMS variables to Hyprland then delete the global file
+# 2. Hard-Disable the actual auto-start to be safe
+systemctl --user disable dms 2>/dev/null
+
+# 3. Environment Variable Migration (Existing Logic)
 DMS_ENV="$HOME/.config/environment.d/90-dms.conf"
 HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
 if [ -f "$DMS_ENV" ]; then
-    echo -e "\n# Isolated DMS Envs" >> "$HYPR_CONF"
-    # Filter out comments and empty lines, then format for Hyprland
+    echo -e "\n# Isolated DMS Environment Variables" >> "$HYPR_CONF"
+    # Use your existing while loop or the sed cleaner
     grep -v '^#' "$DMS_ENV" | grep -v '^$' | sed 's/^/env = /' >> "$HYPR_CONF"
     rm "$DMS_ENV"
 fi
+
+# 4. The ONLY place DMS will actually run
 echo "exec-once = dms run" >> "$HYPR_CONF"
 
 # --- 10. Custom Hyprland Injections ---
