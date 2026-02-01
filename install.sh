@@ -120,28 +120,7 @@ fi
 
 # 4. The Trigger
 # We keep 'dms run' because it handles its own startup logic inside Hyprland
-# --- 9. DMS Installer & Logic ---
-echo "Running DMS installer..."
-curl -fsSL https://install.danklinux.com | sh
-
-# 1. Enable the service so 'dms doctor' is happy
-systemctl --user enable dms
-
-# 2. Immediately stop the active service so it doesn't stay in KDE/current session
-systemctl --user stop dms 2>/dev/null
-
-# 3. Environment Variable Isolation (The standard logic we've refined)
-DMS_ENV="$HOME/.config/environment.d/90-dms.conf"
-HYPR_CONF="$HOME/.config/hypr/hyprland.conf"
-if [ -f "$DMS_ENV" ]; then
-    echo -e "\n# Isolated DMS Envs" >> "$HYPR_CONF"
-    grep -v '^#' "$DMS_ENV" | grep -v '^$' | sed 's/^/env = /' >> "$HYPR_CONF"
-    rm "$DMS_ENV"
-fi
-
-# 4. The Trigger
-# We keep 'dms run' because it handles its own startup logic inside Hyprland
-echo "exec-once = systemctl --user start dms" >> "$HYPR_CONF"
+echo "exec-once = dms run" >> "$HYPR_CONF"
 
 #--- 10. Custom Hyprland Injections ---
 echo "Injecting custom Hyprland settings..."
