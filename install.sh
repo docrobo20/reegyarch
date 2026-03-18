@@ -29,7 +29,7 @@ MY_PACKAGES=(
     "fcitx5" "fcitx5-configtool" "fcitx5-mozc" "fcitx5-gtk" "fcitx5-qt"
     "hyprland" "ly" "swww" "grim" "slurp"
     "dolphin" "konsole" "kio-extras" "kservice" "ark" "kvantum" "nwg-look"
-    "ghostty" "networkmanager" "pavucontrol" "bluez" "blueman"
+    "alacritty" "networkmanager" "pavucontrol" "bluez" "blueman"
 )
 
 MY_AUR_PACKAGES=(
